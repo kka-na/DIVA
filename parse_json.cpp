@@ -2,10 +2,12 @@
 #include "Index_and_timestamp.h"
 
 int main(){
-   
+
+
     Make_json mj;
 
-    mj.sensor(2);
+
+    mj.sensor(4);
 
     mj.log(0);
 
@@ -16,6 +18,8 @@ int main(){
     mj.frame_data();
 
     mj.gps_data();
+
+    mj.imu_data();
 
     return 0;
 }

@@ -18,7 +18,7 @@ using namespace std;
 #define is_CAM  2
 #define is_LiDAR 3
 #define is_IMU 4
-#define  number_of_sensors 2
+#define  number_of_sensors 4
 
 
 
@@ -35,7 +35,7 @@ public:
         size=33;
     }else if(i==is_LiDAR){
         sensor = "LiDAR";
-        size = 32;
+        size = 35;
     }else{
         sensor = "IMU";
     }

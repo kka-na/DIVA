@@ -41,7 +41,7 @@ int main(){
 
     while(1){
         cap >> frame;
-        //cv::imshow("WebCam Frame Capture", frame );
+        cv::imshow("WebCam Frame Capture", frame );
 
         string m_time = ts.getMilliTime();
 

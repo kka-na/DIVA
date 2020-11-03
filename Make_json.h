@@ -11,12 +11,18 @@ class Make_json{
 	public :
 
 	int gps_idx;
+
 	int gps_start;
 	int gps_last;
 	int cam_start;
 	int lidar_start;
+	int imu_start;
+
 	int gps_csv_size;
+	int imu_csv_size;
 	int cam_txt_size;
+	int lidar_txt_size;
+
 	int scene_count;
 	int cam_sensors;
 	int this_frame_start;
@@ -25,15 +31,21 @@ class Make_json{
 
 	Index_and_timestamp iat;
 	Gps_convert gc;
+	Imu_convert ic;
 
 	Make_json(){
+
 		gps_csv_size = iat.gps_csv.size();
 		cam_txt_size = iat.cam_txt.size();
+		lidar_txt_size = iat.lidar_txt.size();
+		imu_csv_size = iat.imu_csv.size();
+
 		gps_start = iat.get_start_indexes()[1];
-		
 		cam_start = iat.get_start_indexes()[2];
-		//lidar_start = iat.get_start_indexes()[3];
-		cam_sensors = 1; // if 2 -> cam, lidar 
+		lidar_start = iat.get_start_indexes()[3];
+		imu_start = iat.get_start_indexes()[4];
+
+		cam_sensors = 2; // if 2 -> cam, lidar 
 
 		//scene_count = gps_csv_size / 20;
 		scene_count = iat.number_of_frames() / 200;
@@ -84,10 +96,10 @@ class Make_json{
 
     	string tm_year = to_string(systime->tm_year + 1900);
     	string tm_month = to_string(systime->tm_mon+1);
-    	string tm_rand = to_string(systime->tm_mday + (rand() % 10));
+    	string tm_date = to_string(systime->tm_mday);
 
     	string timestamp;
-    	timestamp = tm_year + tm_month + tm_year;
+    	timestamp = tm_year + tm_month + tm_date;
 
    	 	return timestamp;
 	}
@@ -121,11 +133,11 @@ class Make_json{
 		out.close();
 	}
 
+
 	Json::Value Sensors;
 	void sensor(int sensors_num){
 
 		Json::Value sensor;
-
 		string sensor_name;
 
 		for(int i=0; i<=sensors_num; i++){
@@ -205,7 +217,7 @@ class Make_json{
 
 		int frame_idx = frame_start;
 
-		Json::Value a_frame;
+		Json::Value a_frame;			
 
 		for(int i=0; i<scene_count; i++){
 			string token_prev = "";
@@ -266,21 +278,20 @@ void frame_data() // store cam and lidar data
 	Json::Value frame_datum;
 
 	int frame_start = gps_start;
-	//frame_idx = frame_start;
+	int frame_idx = frame_start;
 	int frame_data_idx = frame_start;
 
 	this_frame_data_start = Frame_data.size();
 
 	int cam_idx = cam_start;
-	//int lidar_idx = lidar_start;
+	int lidar_idx = lidar_start;
 
 	string ts_of_cam_by_idx;
-	//string ts_of_lidar_by_idx;
+	string ts_of_lidar_by_idx;
 
 	string cam_path =  "/home/kanakim/Documents/CAM/JPG/i30_CAM_";
-	//string lidar_path = "/home/kanakim/Documents/LiDAR/PCD/i30_LiDAR_";
+	string lidar_path = "/home/kanakim/Documents/LiDAR/PCD/i30_LiDAR_";
 
-	//iat.lidar_txt;
 
 	for(int i=0; i<scene_count; i++){
 		string token_prev1 = "";
@@ -296,8 +307,7 @@ void frame_data() // store cam and lidar data
 				break;
 			}else if(frame_data_idx > gps_last){
 				break;
-			}
-			
+			}	
 			
 			string gps_ts = iat.get_gps_timestamp(frame_data_idx);
 			string token_next;
@@ -313,7 +323,7 @@ void frame_data() // store cam and lidar data
 					frame_datum["frame_data_token"] = token_curr1;
 					frame_datum["frame_token"] = Frames[this_frame_start]["frame_token"];
 					frame_datum["gps_token"] = token_curr1;
-					//frame_datum["imu_token"] = token_curr1;
+					frame_datum["imu_token"] = token_curr1;
 					//frame_datum["can_token"] = token_curr1;
 					frame_datum["sensor_token"] = Sensors[2]["sensor_token"];
 					ts_of_cam_by_idx = iat.get_cam_timestamp(cam_idx);
@@ -336,23 +346,23 @@ void frame_data() // store cam and lidar data
 					token_curr1 = token_next;	
 				}
 
-/*
+
 				else{//lidar
 					lidar_idx = iat.find_lidar_idx_by_ts(lidar_idx, gps_ts);
-					if(lidar > lidar_txt_size-1) continue;
+					if(lidar_idx > lidar_txt_size-1) continue;
 					ts_of_lidar_by_idx = iat.get_lidar_timestamp(lidar_idx);
 					token_next = generate_token_2();
 					frame_datum["frame_data_token"] = token_curr2;
 					frame_datum["frame_token"] = Frames[this_frame_start]["frame_token"];
-					//frame_datum["gps_token"] = token_curr2;
-					//frame_datum["imu_token"] = token_curr2;
+					frame_datum["gps_token"] = token_curr2;
+					frame_datum["imu_token"] = token_curr2;
 					//frame_datum["can_token"] = token_curr2;
-					//frame_datum["sensor_token"] = Sensors[3]["sensor_token"];
+					frame_datum["sensor_token"] = Sensors[3]["sensor_token"];
 					ts_of_lidar_by_idx = iat.get_lidar_timestamp(lidar_idx);
 					frame_datum["filename"] = lidar_path+ts_of_lidar_by_idx+".pcd";
 					frame_datum["fileformat"] = "pcd";
 
-					frame_datum["timestamp"] = timestamp;
+					frame_datum["timestamp"] = ts_of_lidar_by_idx;
 					if (frame_datum["timestamp"] == Frames[i]["timestamp"])
 						frame_datum["is_key_frame"] = true;
 					else
@@ -360,17 +370,17 @@ void frame_data() // store cam and lidar data
 
 					frame_datum["prev"] = token_prev2;
 					if(frame_data_idx < gps_csv_size && frame_data_idx == frame_start+199)
-						a_frame["token_next"] = "";
+						frame_datum["next"] = "";
 					else if(frame_data_idx < gps_csv_size && frame_data_idx == gps_csv_size-1)
-						a_frame["token_next"] = "";
+						frame_datum["next"] = "";
 					else
-						a_frame["token_next"] = token_next;
+						frame_datum["next"] = token_next;
 
 					Frame_data.append(frame_datum);
 					frame_datum.clear();
 					token_prev2 = token_curr2;
 					token_curr2 = token_next;
-				}*/
+				}
 
 			}
 	
@@ -431,7 +441,7 @@ void gps_data(){
 
 }
 
-/*
+
 Json::Value Imu_data;
 void imu_data(){
 
@@ -448,16 +458,18 @@ void imu_data(){
 	int where_frame_started = this_frame_data_start;
 
 	for(int i=0; i<scene_count; i++){
+
 		while(1){
 			if(imu_data_idx > imu_data_start+199){
 				imu_data_start = imu_data_idx;
 				break;
-			}else if(imu_data_idx > imu_last){
+			}else if(imu_data_idx > gps_last){
 				break;
 			}
+
 			imus["token"] = Frame_data[where_frame_started]["frame_data_token"];
 			imus["sensor_token"] = Sensors[4]["sensor_token"];
-			//imus["timestamp"] = iat.get_imu_timestamp(imu_data_idx);
+			imus["timestamp"] = iat.get_imu_timestamp(imu_data_idx);
 			ic.Get_GAM(imu_data_idx);
 			gyroscope.append(ic.gyro_x); gyroscope.append(ic.gyro_y); gyroscope.append(ic.gyro_z); 
 			imus["gyroscope"] = gyroscope;
@@ -467,10 +479,16 @@ void imu_data(){
 			imus["magnetic"] = magnetic;
 
 			Imu_data.append(imus);
+			gyroscope.clear();
+			acceleration.clear();
+			magnetic.clear();
 			imus.clear();
+
+			imu_data_idx++;
+			where_frame_started++;
+
 		}
-		imu_data_idx++;
-		where_frame_started++;
+		
 	}
 
 	Json::StyledWriter writer;
@@ -479,13 +497,6 @@ void imu_data(){
 	out.close();
 }
 
-*/
-
-
-/*
-
-
-*/
 
 };
 

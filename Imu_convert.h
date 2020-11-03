@@ -7,16 +7,17 @@ class Imu_convert{
 public:
 
 	Index_and_timestamp iat;
-	float gyro_x;
-	float gyro_y;
-	float gyro_z;
-	float accel_x;
-	float accel_y;
-	float accel_z;
-	float mag_x;
-	float mag_y;
-	float mag_z;
-/*
+
+	string gyro_x;
+	string gyro_y;
+	string gyro_z;
+	string accel_x;
+	string accel_y;
+	string accel_z;
+	string mag_x;
+	string mag_y;
+	string mag_z;
+
 	void Get_GAM(int imu_idx){ //get Zyro, Acceleration, Magnetic by index
 
 		gyro_x = iat.imu_csv[imu_idx][1];
@@ -29,7 +30,7 @@ public:
 		mag_y = iat.imu_csv[imu_idx][8];
 		mag_z = iat.imu_csv[imu_idx][9];
 
-	}*/
+	}
 
 
 };
