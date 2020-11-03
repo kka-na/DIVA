@@ -1,0 +1,14 @@
+[
+   {
+      "Sensor" : "NULL",
+      "sensor_token" : "NULL"
+   },
+   {
+      "Sensor" : "GPS",
+      "sensor_token" : "c248b87d6ae33f9a"
+   },
+   {
+      "Sensor" : "CAM",
+      "sensor_token" : "62d7183a5d5789e4"
+   }
+]
